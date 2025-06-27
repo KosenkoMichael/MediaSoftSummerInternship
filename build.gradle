@@ -3,6 +3,14 @@ plugins {
     id 'application'
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/task_1']
+        }
+    }
+}
+
 group = 'com.example'
 version = '1.0'
 
