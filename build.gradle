@@ -3,6 +3,14 @@ plugins {
     id 'application'
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/task_2']
+        }
+    }
+}
+
 group = 'com.example'
 version = '1.0'
 
@@ -13,4 +21,8 @@ java {
 
 application {
     mainClass = 'Main'
+}
+
+run {
+    standardInput = System.in
 }
