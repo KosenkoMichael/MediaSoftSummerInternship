@@ -6,7 +6,7 @@ plugins {
 sourceSets {
     main {
         java {
-            srcDirs = ['src/main/task_3']
+            srcDirs = ['src/main/task_4']
         }
     }
 }
