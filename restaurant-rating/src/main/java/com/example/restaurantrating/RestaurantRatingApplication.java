@@ -1,4 +1,4 @@
-package com.example.restaurant_rating;
+package com.example.restaurantrating;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class RestaurantRatingApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(RestaurantRatingApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(RestaurantRatingApplication.class, args);
+    }
 }
