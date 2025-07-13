@@ -1,6 +1,10 @@
 package com.example.restaurantrating.service;
 
+import com.example.restaurantrating.dto.request.RatingRequestDTO;
+import com.example.restaurantrating.dto.response.RatingResponseDTO;
 import com.example.restaurantrating.entity.Rating;
+import com.example.restaurantrating.entity.Restaurant;
+import com.example.restaurantrating.mapper.RatingMapper;
 import com.example.restaurantrating.repository.RatingRepository;
 import com.example.restaurantrating.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,19 +21,25 @@ public class RatingService {
 
     private final RatingRepository ratingRepository;
     private final RestaurantRepository restaurantRepository;
+    private final RatingMapper ratingMapper;
 
-    public void save(Rating rating) {
+    public void save(RatingRequestDTO dto) {
+        Rating rating = ratingMapper.toEntity(dto);
         ratingRepository.save(rating);
         recalculateAverageRating(rating.getRestaurantId());
     }
 
-    public void remove(Rating rating) {
-        ratingRepository.remove(rating);
-        recalculateAverageRating(rating.getRestaurantId());
+    public void remove(Long visitorId, Long restaurantId) {
+        findById(visitorId, restaurantId).ifPresent(rating -> {
+            ratingRepository.remove(rating);
+            recalculateAverageRating(restaurantId);
+        });
     }
 
-    public List<Rating> findAll() {
-        return ratingRepository.findAll();
+    public List<RatingResponseDTO> findAll() {
+        return ratingRepository.findAll().stream()
+                .map(ratingMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     public Optional<Rating> findById(Long visitorId, Long restaurantId) {
