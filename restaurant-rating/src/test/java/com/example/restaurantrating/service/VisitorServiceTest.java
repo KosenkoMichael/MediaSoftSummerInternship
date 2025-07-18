@@ -49,12 +49,15 @@ public class VisitorServiceTest {
     }
 
     @Test
-    void remove_shouldCallDeleteById() {
+    void remove_shouldCallDelete() {
         Long id = 1L;
+        Visitor visitor = new Visitor(id, "John", 30, "Male");
+
+        when(visitorRepository.findById(id)).thenReturn(Optional.of(visitor));
 
         visitorService.remove(id);
 
-        verify(visitorRepository).deleteById(id);
+        verify(visitorRepository).delete(visitor);
     }
 
     @Test
@@ -91,13 +94,19 @@ public class VisitorServiceTest {
     }
 
     @Test
-    void findById_shouldReturnOptionalVisitor() {
+    void findById_shouldReturnVisitorResponseDTO() {
         Visitor visitor = new Visitor(1L, "John", 30, "Male");
+        VisitorResponseDTO dto = new VisitorResponseDTO(1L, "John", 30, "Male");
 
         when(visitorRepository.findById(1L)).thenReturn(Optional.of(visitor));
+        when(visitorMapper.toResponseDTO(visitor)).thenReturn(dto);
 
-        Optional<Visitor> result = visitorService.findById(1L);
+        VisitorResponseDTO result = visitorService.findById(1L);
 
-        assertThat(result).contains(visitor);
+        assertThat(result.id()).isEqualTo(visitor.getId());
+        assertThat(result.name()).isEqualTo(visitor.getName());
+        assertThat(result.age()).isEqualTo(visitor.getAge());
+        assertThat(result.gender()).isEqualTo(visitor.getGender());
     }
 }
+

@@ -3,6 +3,7 @@ package com.example.restaurantrating.controller;
 import com.example.restaurantrating.dto.request.RestaurantRequestDTO;
 import com.example.restaurantrating.dto.response.RestaurantResponseDTO;
 import com.example.restaurantrating.entity.KitchenType;
+import com.example.restaurantrating.exception.ResourceNotFoundException;
 import com.example.restaurantrating.service.RestaurantService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -115,4 +116,42 @@ class RestaurantControllerTest {
 
         Mockito.verify(restaurantService).findByMinRating(eq(minRating), any(Pageable.class));
     }
+
+    @Test
+    void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
+        RestaurantRequestDTO invalidDto = RestaurantRequestDTO.builder()
+                .name("") // Пустое имя — должно быть невалидно
+                .description("Desc")
+                .kitchenType(null) // Обязательное поле
+                .averageCheck(BigDecimal.valueOf(-10)) // Отрицательное значение
+                .build();
+
+        mockMvc.perform(post("/api/restaurants")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void delete_shouldReturnNotFound_whenRestaurantDoesNotExist() throws Exception {
+        Long nonExistentId = 999L;
+
+        // Эмулируем выброс исключения при удалении
+        Mockito.doThrow(new ResourceNotFoundException("Restaurant not found"))
+                .when(restaurantService).remove(nonExistentId);
+
+        mockMvc.perform(delete("/api/restaurants/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void findByMinRating_shouldReturnBadRequest_whenInvalidMinRating() throws Exception {
+        mockMvc.perform(get("/api/restaurants/searchByRating")
+                        .param("minRating", "invalid_number")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isBadRequest());
+    }
+
 }

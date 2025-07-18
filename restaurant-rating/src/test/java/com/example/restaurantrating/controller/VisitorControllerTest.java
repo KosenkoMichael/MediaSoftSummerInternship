@@ -2,6 +2,7 @@ package com.example.restaurantrating.controller;
 
 import com.example.restaurantrating.dto.request.VisitorRequestDTO;
 import com.example.restaurantrating.dto.response.VisitorResponseDTO;
+import com.example.restaurantrating.exception.ResourceNotFoundException;
 import com.example.restaurantrating.service.VisitorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -87,4 +88,45 @@ public class VisitorControllerTest {
                 .andExpect(jsonPath("$.content[1].id").value(dto2.id()))
                 .andExpect(jsonPath("$.content[1].name").value(dto2.name()));
     }
+
+    @Test
+    void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
+        VisitorRequestDTO invalidDto = VisitorRequestDTO.builder()
+                .name("")          // Пустое имя - валидатор должен отреагировать
+                .age(-5)           // Отрицательный возраст - недопустимо
+                .gender(null)      // Пол обязателен, если есть валидация
+                .build();
+
+        mockMvc.perform(post("/api/visitors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void delete_shouldReturnNotFound_whenVisitorDoesNotExist() throws Exception {
+        Long nonExistentId = 999L;
+
+        Mockito.doThrow(new ResourceNotFoundException("Visitor not found"))
+                .when(visitorService).remove(nonExistentId);
+
+        mockMvc.perform(delete("/api/visitors/{id}", nonExistentId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void findAll_shouldReturnEmptyPage_whenNoVisitors() throws Exception {
+        Page<VisitorResponseDTO> emptyPage = new PageImpl<>(List.of());
+
+        Mockito.when(visitorService.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/api/visitors")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sortBy", "name")
+                        .param("direction", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
+    }
+
 }

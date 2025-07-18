@@ -6,6 +6,8 @@ import com.example.restaurantrating.entity.Rating;
 import com.example.restaurantrating.entity.RatingId;
 import com.example.restaurantrating.entity.Restaurant;
 import com.example.restaurantrating.entity.Visitor;
+import com.example.restaurantrating.exception.DuplicateReviewException;
+import com.example.restaurantrating.exception.ResourceNotFoundException;
 import com.example.restaurantrating.mapper.RatingMapper;
 import com.example.restaurantrating.repository.RatingRepository;
 import com.example.restaurantrating.repository.RestaurantRepository;
@@ -31,9 +33,16 @@ public class RatingService {
 
     public void save(RatingRequestDTO dto) {
         Visitor visitor = visitorRepository.findById(dto.getVisitorId())
-                .orElseThrow(() -> new RuntimeException("Visitor not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Visitor with ID " + dto.getVisitorId() + " not found"));
+
         Restaurant restaurant = restaurantRepository.findById(dto.getRestaurantId())
-                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant with ID " + dto.getRestaurantId() + " not found"));
+
+        RatingId ratingId = new RatingId(dto.getVisitorId(), dto.getRestaurantId());
+
+        if (ratingRepository.existsById(ratingId)) {
+            throw new DuplicateReviewException("Rating already exists for this visitor and restaurant");
+        }
 
         Rating rating = ratingMapper.toEntity(dto);
         rating.setVisitor(visitor);
@@ -45,10 +54,11 @@ public class RatingService {
 
     public void remove(Long visitorId, Long restaurantId) {
         RatingId ratingId = new RatingId(visitorId, restaurantId);
-        ratingRepository.findById(ratingId).ifPresent(rating -> {
-            ratingRepository.delete(rating);
-            recalculateAverageRating(restaurantId);
-        });
+        Rating rating = ratingRepository.findById(ratingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rating not found for visitorId=" + visitorId + " and restaurantId=" + restaurantId));
+
+        ratingRepository.delete(rating);
+        recalculateAverageRating(restaurantId);
     }
 
     public List<RatingResponseDTO> findAll() {

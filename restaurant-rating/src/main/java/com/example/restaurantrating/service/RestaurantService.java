@@ -3,6 +3,7 @@ package com.example.restaurantrating.service;
 import com.example.restaurantrating.dto.request.RestaurantRequestDTO;
 import com.example.restaurantrating.dto.response.RestaurantResponseDTO;
 import com.example.restaurantrating.entity.Restaurant;
+import com.example.restaurantrating.exception.ResourceNotFoundException;
 import com.example.restaurantrating.mapper.RestaurantMapper;
 import com.example.restaurantrating.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +28,9 @@ public class RestaurantService {
     }
 
     public void remove(Long id) {
-        restaurantRepository.deleteById(id);
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant with ID " + id + " not found"));
+        restaurantRepository.delete(restaurant);
     }
 
     public List<RestaurantResponseDTO> findAll() {
@@ -42,8 +44,10 @@ public class RestaurantService {
                 .map(restaurantMapper::toResponseDTO);
     }
 
-    public Optional<Restaurant> findById(Long id) {
-        return restaurantRepository.findById(id);
+    public RestaurantResponseDTO findById(Long id) {
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant with ID " + id + " not found"));
+        return restaurantMapper.toResponseDTO(restaurant);
     }
 
     public Page<RestaurantResponseDTO> findByMinRating(BigDecimal minRating, Pageable pageable) {

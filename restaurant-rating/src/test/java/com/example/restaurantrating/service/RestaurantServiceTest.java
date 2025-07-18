@@ -39,9 +39,10 @@ public class RestaurantServiceTest {
         RestaurantRequestDTO dto = RestaurantRequestDTO.builder()
                 .name("Test Restaurant")
                 .description("Test Description")
-                .kitchenType(KitchenType.ITALIAN) // пример enum
+                .kitchenType(KitchenType.ITALIAN)
                 .averageCheck(new BigDecimal("25.50"))
                 .build();
+
         Restaurant restaurant = new Restaurant();
         restaurant.setName("Test Restaurant");
         restaurant.setDescription("Test Description");
@@ -57,12 +58,15 @@ public class RestaurantServiceTest {
     }
 
     @Test
-    void remove_shouldCallDeleteById() {
+    void remove_shouldCallDelete() {
         Long id = 1L;
+        Restaurant restaurant = new Restaurant();  // или можно задать id, если нужно
+
+        when(restaurantRepository.findById(id)).thenReturn(Optional.of(restaurant));
 
         restaurantService.remove(id);
 
-        verify(restaurantRepository).deleteById(id);
+        verify(restaurantRepository).delete(restaurant);
     }
 
     @Test
@@ -99,14 +103,29 @@ public class RestaurantServiceTest {
     }
 
     @Test
-    void findById_shouldReturnOptionalRestaurant() {
+    void findById_shouldReturnRestaurantResponseDTO() {
         Restaurant restaurant = new Restaurant(1L, "Name", "Desc", null, null, BigDecimal.valueOf(4.0));
-
         when(restaurantRepository.findById(1L)).thenReturn(Optional.of(restaurant));
 
-        Optional<Restaurant> result = restaurantService.findById(1L);
+        // Добавляем мок для маппера, иначе будет null
+        RestaurantResponseDTO dto = new RestaurantResponseDTO(
+                restaurant.getId(),
+                restaurant.getName(),
+                restaurant.getDescription(),
+                restaurant.getKitchentype(),
+                restaurant.getAverageCheck(),
+                restaurant.getAverageRating()
+        );
+        when(restaurantMapper.toResponseDTO(restaurant)).thenReturn(dto);
 
-        assertThat(result).contains(restaurant);
+        RestaurantResponseDTO result = restaurantService.findById(1L);
+
+        assertThat(result.id()).isEqualTo(restaurant.getId());
+        assertThat(result.name()).isEqualTo(restaurant.getName());
+        assertThat(result.description()).isEqualTo(restaurant.getDescription());
+        assertThat(result.kitchenType()).isEqualTo(restaurant.getKitchentype());
+        assertThat(result.averageCheck()).isEqualTo(restaurant.getAverageCheck());
+        assertThat(result.averageRating()).isEqualTo(restaurant.getAverageRating());
     }
 
     @Test

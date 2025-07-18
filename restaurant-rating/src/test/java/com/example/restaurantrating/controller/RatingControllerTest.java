@@ -2,6 +2,7 @@ package com.example.restaurantrating.controller;
 
 import com.example.restaurantrating.dto.request.RatingRequestDTO;
 import com.example.restaurantrating.dto.response.RatingResponseDTO;
+import com.example.restaurantrating.exception.DuplicateReviewException;
 import com.example.restaurantrating.service.RatingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -80,4 +81,53 @@ class RatingControllerTest {
 
         Mockito.verify(ratingService).findAll(any(Pageable.class));
     }
+
+    @Test
+    void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
+        RatingRequestDTO invalidDto = RatingRequestDTO.builder()
+                .visitorId(null) // <- required
+                .restaurantId(2L)
+                .score(10) // <- max = 5
+                .review("Very long...") // можно ещё и с превышением длины
+                .build();
+
+        mockMvc.perform(post("/api/ratings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void save_shouldReturnConflict_whenDuplicateReview() throws Exception {
+        RatingRequestDTO dto = RatingRequestDTO.builder()
+                .visitorId(1L)
+                .restaurantId(2L)
+                .score(4)
+                .review("Already reviewed")
+                .build();
+
+        Mockito.doThrow(new DuplicateReviewException("Review already exists"))
+                .when(ratingService).save(any());
+
+        mockMvc.perform(post("/api/ratings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void findAll_shouldReturnEmptyPage_whenNoRatingsExist() throws Exception {
+        Page<RatingResponseDTO> emptyPage = new PageImpl<>(List.of());
+
+        Mockito.when(ratingService.findAll(any(Pageable.class))).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/api/ratings")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sortBy", "score")
+                        .param("direction", "asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty());
+    }
+
 }
