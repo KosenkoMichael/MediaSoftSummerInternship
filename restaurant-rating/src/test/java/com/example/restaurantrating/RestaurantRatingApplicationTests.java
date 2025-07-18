@@ -1,4 +1,4 @@
-package com.example.restaurant_rating;
+package com.example.restaurantrating;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
