@@ -1,29 +1,18 @@
 package com.example.restaurantrating.repository;
 
 import com.example.restaurantrating.entity.Restaurant;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.math.BigDecimal;
 import java.util.List;
 
-@Repository
-public class RestaurantRepository {
-    private final List<Restaurant> restaurants = new ArrayList<>();
-    private long Id = 0;
+public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
-    public void save(Restaurant restaurant) {
-        if (restaurant.getId() == null) {
-            restaurant.setId(++Id);
-        }
-        restaurants.add(restaurant);
-    }
+    List<Restaurant> findByAverageRatingGreaterThanEqual(BigDecimal minRating);
 
-    public void remove(Restaurant restaurant) {
-        restaurants.remove(restaurant);
-    }
-
-    public List<Restaurant> findAll() {
-        return Collections.unmodifiableList(restaurants);
-    }
+    @Query("SELECT r FROM Restaurant r WHERE r.averageRating >= :minRating")
+    Page<Restaurant> findByAverageRatingGreaterThanEqual(BigDecimal minRating, Pageable pageable);
 }
