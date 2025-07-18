@@ -85,10 +85,10 @@ class RatingControllerTest {
     @Test
     void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
         RatingRequestDTO invalidDto = RatingRequestDTO.builder()
-                .visitorId(null) // <- required
+                .visitorId(null)
                 .restaurantId(2L)
-                .score(10) // <- max = 5
-                .review("Very long...") // можно ещё и с превышением длины
+                .score(10)
+                .review("Very long...")
                 .build();
 
         mockMvc.perform(post("/api/ratings")

@@ -25,14 +25,13 @@ public class RatingRepositoryIntegrationTest {
     private RatingRepository ratingRepository;
 
     @Autowired
-    private VisitorRepository visitorRepository; // предполагаю, что есть
+    private VisitorRepository visitorRepository;
 
     @Autowired
     private RestaurantRepository restaurantRepository;
 
     @Test
     public void testSaveAndFindRating() {
-        // Сначала создаём связанные сущности
         Visitor visitor = new Visitor();
         visitor.setName("John Doe");
         visitor = visitorRepository.save(visitor);
@@ -42,7 +41,6 @@ public class RatingRepositoryIntegrationTest {
         restaurant.setAverageRating(BigDecimal.valueOf(4.5));
         restaurant = restaurantRepository.save(restaurant);
 
-        // Создаем рейтинг
         Rating rating = new Rating();
         rating.setVisitor(visitor);
         rating.setRestaurant(restaurant);
@@ -51,7 +49,6 @@ public class RatingRepositoryIntegrationTest {
 
         rating = ratingRepository.save(rating);
 
-        // Создаем RatingId для поиска
         RatingId ratingId = new RatingId(visitor.getId(), restaurant.getId());
 
         Optional<Rating> found = ratingRepository.findById(ratingId);

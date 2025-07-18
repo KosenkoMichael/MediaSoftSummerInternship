@@ -120,10 +120,10 @@ class RestaurantControllerTest {
     @Test
     void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
         RestaurantRequestDTO invalidDto = RestaurantRequestDTO.builder()
-                .name("") // Пустое имя — должно быть невалидно
+                .name("")
                 .description("Desc")
-                .kitchenType(null) // Обязательное поле
-                .averageCheck(BigDecimal.valueOf(-10)) // Отрицательное значение
+                .kitchenType(null)
+                .averageCheck(BigDecimal.valueOf(-10))
                 .build();
 
         mockMvc.perform(post("/api/restaurants")
@@ -136,7 +136,6 @@ class RestaurantControllerTest {
     void delete_shouldReturnNotFound_whenRestaurantDoesNotExist() throws Exception {
         Long nonExistentId = 999L;
 
-        // Эмулируем выброс исключения при удалении
         Mockito.doThrow(new ResourceNotFoundException("Restaurant not found"))
                 .when(restaurantService).remove(nonExistentId);
 

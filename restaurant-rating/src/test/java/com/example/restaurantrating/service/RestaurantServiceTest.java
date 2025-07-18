@@ -60,7 +60,7 @@ public class RestaurantServiceTest {
     @Test
     void remove_shouldCallDelete() {
         Long id = 1L;
-        Restaurant restaurant = new Restaurant();  // или можно задать id, если нужно
+        Restaurant restaurant = new Restaurant();
 
         when(restaurantRepository.findById(id)).thenReturn(Optional.of(restaurant));
 
@@ -107,7 +107,6 @@ public class RestaurantServiceTest {
         Restaurant restaurant = new Restaurant(1L, "Name", "Desc", null, null, BigDecimal.valueOf(4.0));
         when(restaurantRepository.findById(1L)).thenReturn(Optional.of(restaurant));
 
-        // Добавляем мок для маппера, иначе будет null
         RestaurantResponseDTO dto = new RestaurantResponseDTO(
                 restaurant.getId(),
                 restaurant.getName(),

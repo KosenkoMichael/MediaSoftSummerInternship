@@ -19,7 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY) // чтобы использовать H2 в тестах
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @Transactional
 public class RestaurantRepositoryIntegrationTest {
 
@@ -28,7 +28,6 @@ public class RestaurantRepositoryIntegrationTest {
 
     @Test
     public void testFindByAverageRatingGreaterThanEqual() {
-        // Подготовим данные
         Restaurant r1 = new Restaurant();
         r1.setName("Italian Bistro");
         r1.setAverageRating(new BigDecimal("4.5"));
@@ -39,10 +38,8 @@ public class RestaurantRepositoryIntegrationTest {
         r2.setAverageRating(new BigDecimal("3.0"));
         restaurantRepository.save(r2);
 
-        // Вызов метода поиска
         List<Restaurant> result = restaurantRepository.findByAverageRatingGreaterThanEqual(new BigDecimal("4.0"));
 
-        // Проверяем, что нашли только ресторан с рейтингом >= 4.0
         assertEquals(1, result.size());
         assertEquals("Italian Bistro", result.get(0).getName());
     }
@@ -61,11 +58,9 @@ public class RestaurantRepositoryIntegrationTest {
                 PageRequest.of(0, 5)
         );
 
-        // Проверяем, что все рестораны на странице имеют рейтинг >= 3.0
         assertTrue(page.getContent().stream()
                 .allMatch(r -> r.getAverageRating().compareTo(new BigDecimal("3.0")) >= 0));
 
-        // Проверяем, что страница не пустая и содержит максимум 5 элементов
         assertFalse(page.isEmpty());
         assertTrue(page.getContent().size() <= 5);
     }

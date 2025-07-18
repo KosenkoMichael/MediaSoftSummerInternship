@@ -36,7 +36,7 @@ public class VisitorControllerTest {
     private VisitorService visitorService;
 
     @Autowired
-    private ObjectMapper objectMapper; // для сериализации/десериализации JSON
+    private ObjectMapper objectMapper;
 
     @Test
     void save_shouldReturnOk() throws Exception {
@@ -92,9 +92,9 @@ public class VisitorControllerTest {
     @Test
     void save_shouldReturnBadRequest_whenInvalidData() throws Exception {
         VisitorRequestDTO invalidDto = VisitorRequestDTO.builder()
-                .name("")          // Пустое имя - валидатор должен отреагировать
-                .age(-5)           // Отрицательный возраст - недопустимо
-                .gender(null)      // Пол обязателен, если есть валидация
+                .name("")
+                .age(-5)
+                .gender(null)
                 .build();
 
         mockMvc.perform(post("/api/visitors")
